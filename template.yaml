@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: A simple AWS Lambda application using Java with a Layer.
+
+Globals:
+  Function:
+    Runtime: java21
+    Timeout: 10  # Timeout in seconds
+    MemorySize: 512
+    Architectures:
+      - x86_64
+Parameters:
+  LambdaFunctionName:
+    Type: String
+    Default: lmd-java-sample
+    Description: The name of the Lambda function.
+
+Resources:
+  JavaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Handler: example.Handler::handleRequest
+      CodeUri: function/
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Role: arn:aws:iam::xxxx:role/duck's role
+      Layers:
+        - !Ref JavaLayer
+    Metadata:
+      BuildMethod: makefile
+
+  JavaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: "java-dependencies"
+      Description: "Java libraries required for the lambda function"
+      ContentUri: layer/
+      RetentionPolicy: 'Delete'
+    Metadata:
+      BuildMethod: java21
+
+Outputs:
+  JavaFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt JavaFunction.Arn
+  JavaLayer:
+    Description: "Lambda Layer ARN"
+    Value: !Ref JavaLayer
